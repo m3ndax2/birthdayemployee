@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Birthday Broadcast App</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #23272f;
+        color: #fff;
+        font-family: "Inter", "Segoe UI", sans-serif;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        height: 100%;
+        padding-top: 38px;
+      }
+      h1 {
+        letter-spacing: 1.5px;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+      .dashboard-stat {
+        display: flex;
+        gap: 42px;
+        justify-content: center;
+        margin-bottom: 22px;
+      }
+      .stat-angka {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #31b8f7;
+        letter-spacing: 1.5px;
+        display: block;
+        animation: fadein 1.2s;
+      }
+      .stat-label {
+        font-size: 1.06rem;
+        color: #e7eaf1;
+        opacity: 0.74;
+        letter-spacing: 1px;
+      }
+      .toolbar {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+        margin-bottom: 9px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .search-box {
+        border-radius: 8px;
+        padding: 9px 16px;
+        border: none;
+        background: #212432;
+        color: #fff;
+        font-size: 1.07rem;
+        box-shadow: 0 2px 7px #0003;
+        outline: none;
+        width: 210px;
+        margin-left: 6px;
+        margin-right: 4px;
+        transition: box-shadow 0.21s;
+      }
+      .search-box:focus {
+        box-shadow: 0 5px 15px #31b8f722;
+      }
+      @keyframes fadein {
+        0% {
+          opacity: 0;
+          transform: translateY(-25px) scale(0.97);
+        }
+        85% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .import-btn {
+        background: linear-gradient(90deg, #31b8f7 60%, #31e8f7 100%);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 14px 32px;
+        font-size: 1.09rem;
+        font-weight: 600;
+        box-shadow: 0 3px 18px #2a9ae644;
+        cursor: pointer;
+        outline: none;
+        position: relative;
+        overflow: hidden;
+        transition: background 0.2s, box-shadow 0.22s,
+          transform 0.14s cubic-bezier(0.4, 1.6, 0.4, 1);
+      }
+      .import-btn:hover,
+      .import-btn:focus {
+        background: linear-gradient(90deg, #3ae6e6 30%, #317cf7 100%);
+        box-shadow: 0 8px 32px #31b8f799, 0 1.5px 7px #2a9ae622;
+        transform: translateY(-2px) scale(1.035);
+      }
+      .import-btn:active {
+        background: linear-gradient(90deg, #297ad6 50%, #31b8f7 100%);
+        transform: scale(0.97);
+      }
+      table {
+        border-collapse: collapse;
+        width: 90%;
+        background: #262b38cc;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 16px #0002;
+        margin-top: 18px;
+      }
+      th,
+      td {
+        padding: 11px 12px;
+        text-align: left;
+        border-bottom: 1px solid #222a;
+      }
+      th {
+        background: #233047;
+        color: #fff;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tr:hover td {
+        background: #2a3955;
+      }
+      .filter-label {
+        margin: 12px 0 0 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .filter-label input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #31b8f7;
+      }
+      footer {
+        margin-top: 36px;
+        color: #aaa;
+        font-size: 0.95em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🎉 Birthday Broadcast</h1>
+    <div class="dashboard-stat">
+      <div>
+        <span id="stat-total" class="stat-angka">0</span><br />
+        <span class="stat-label">Total Karyawan</span>
+      </div>
+      <div>
+        <span id="stat-ultah" class="stat-angka">0</span><br />
+        <span class="stat-label">Ultah Hari Ini</span>
+      </div>
+      <div>
+        <span id="stat-email" class="stat-angka">0</span><br />
+        <span class="stat-label">Email Terkirim</span>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button id="refreshBtn" class="import-btn">Refresh Data</button>
+      <button id="broadcastBtn" class="import-btn">
+        Broadcast Email Ulang Tahun
+      </button>
+      <button id="editTemplateBtn" class="import-btn">
+        Edit Email Template
+      </button>
+      <input
+        id="searchBox"
+        class="search-box"
+        placeholder="Cari nama/email..."
+      />
+      <label class="filter-label">
+        <input type="checkbox" id="filterToday" />
+        Tampilkan Ulang Tahun Hari Ini
+      </label>
+    </div>
+
+    <table id="dataTable" style="display: none">
+      <thead>
+        <tr>
+          <th>Nama</th>
+          <th>Email</th>
+          <th>Tanggal Lahir</th>
+          <th>Umur</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <footer>Build with ❤️ for HRD - <b>by Jemi x Mendax</b></footer>
+    <input
+      type="file"
+      id="fileInput"
+      accept=".xls,.xlsx"
+      style="display: none"
+    />
+
+    <!-- Modal Edit Email Template -->
+    <div
+      id="templateModal"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #171a21d1;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        backdrop-filter: blur(2px);
+      "
+    >
+      <div
+        style="
+          background: #24273a;
+          padding: 34px 32px 22px 32px;
+          border-radius: 17px;
+          min-width: 340px;
+          width: 430px;
+          max-width: 92vw;
+          box-shadow: 0 8px 40px #1a233388;
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+          position: relative;
+        "
+      >
+        <div
+          style="
+            font-size: 1.23rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 13px;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+          "
+        >
+          <svg height="22" width="22" style="margin-right: 9px">
+            <circle cx="11" cy="11" r="11" fill="#31b8f7" />
+          </svg>
+          Edit Email Template
+        </div>
+        <textarea
+          id="templateEditor"
+          spellcheck="false"
+          style="
+            width: 100%;
+            height: 170px;
+            border-radius: 8px;
+            padding: 13px 14px;
+            font-size: 1.07rem;
+            background: #191b2a;
+            color: #fff;
+            border: 1.3px solid #24273a;
+            resize: vertical;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            outline: none;
+            box-shadow: 0 2px 12px #1b223688;
+            margin-bottom: 10px;
+            transition: border 0.22s;
+          "
+          placeholder="Tulis pesan ucapan ulang tahun..."
+        ></textarea>
+        <div style="display: flex; justify-content: flex-end; margin-top: 9px">
+          <button
+            id="saveTemplateBtn"
+            class="import-btn"
+            style="margin-right: 10px; min-width: 98px"
+          >
+            Simpan
+          </button>
+          <button
+            id="cancelTemplateBtn"
+            class="import-btn"
+            style="background: #363a45; min-width: 92px"
+          >
+            Batal
+          </button>
+        </div>
+        <div
+          style="
+            color: #b5bbdb;
+            font-size: 0.99em;
+            margin-top: 13px;
+            letter-spacing: 0.1px;
+          "
+        >
+          Variabel:
+          <span style="color: #31b8f7"
+            ><b>&#123;&#123;NAMA&#125;&#125;</b>,
+            <b>&#123;&#123;UMUR&#125;&#125;</b>,
+            <b>&#123;&#123;TANGGAL&#125;&#125;</b></span
+          >
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const { ipcRenderer } = require("electron");
+      let importedData = [];
+      let emailSentCount = 0;
+      let currentTemplate = "";
+
+      async function loadEmailTemplate() {
+        currentTemplate = await ipcRenderer.invoke("load-email-template");
+        return currentTemplate;
+      }
+      async function saveEmailTemplate(newTemplate) {
+        const res = await ipcRenderer.invoke(
+          "save-email-template",
+          newTemplate
+        );
+        if (res.success) {
+          currentTemplate = newTemplate;
+          alert("Template email berhasil disimpan!");
+        } else {
+          alert("Gagal simpan template: " + (res.error || "Unknown error"));
+        }
+      }
+      function excelDateToJSDate(serial) {
+        if (!serial) return "";
+        const utc_days = Math.floor(serial - 25569);
+        const utc_value = utc_days * 86400;
+        const date_info = new Date(utc_value * 1000);
+        const day = String(date_info.getUTCDate()).padStart(2, "0");
+        const month = String(date_info.getUTCMonth() + 1).padStart(2, "0");
+        const year = date_info.getUTCFullYear();
+        return `${day}-${month}-${year}`;
+      }
+      function getAgeFromTanggalLahir(tglLahir) {
+        if (!tglLahir) return "";
+        const [d, m, y] = tglLahir.split("-");
+        const birthDate = new Date(`${y}-${m}-${d}`);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const mDiff = today.getMonth() - birthDate.getMonth();
+        if (
+          mDiff < 0 ||
+          (mDiff === 0 && today.getDate() < birthDate.getDate())
+        ) {
+          age--;
+        }
+        return age;
+      }
+      function renderTable(data, filterToday = false) {
+        const table = document.getElementById("dataTable");
+        const tbody = table.querySelector("tbody");
+        tbody.innerHTML = "";
+        let today = new Date();
+        let dd = String(today.getDate()).padStart(2, "0");
+        let mm = String(today.getMonth() + 1).padStart(2, "0");
+        let filtered = data.filter((row) => {
+          let tgl = row["Tanggal Lahir"];
+          if (typeof tgl === "number") tgl = excelDateToJSDate(tgl);
+          if (filterToday && tgl) {
+            let [d, m] = tgl.split("-");
+            return d === dd && m === mm;
+          }
+          return true;
+        });
+        filtered.forEach((row) => {
+          let tgl = row["Tanggal Lahir"];
+          if (typeof tgl === "number") tgl = excelDateToJSDate(tgl);
+          const umur = getAgeFromTanggalLahir(tgl);
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${row.Nama || ""}</td><td>${
+            row.Email || ""
+          }</td><td>${tgl || ""}</td><td>${umur || ""}</td>`;
+          tbody.appendChild(tr);
+        });
+        table.style.display = filtered.length > 0 ? "" : "none";
+      }
+      function updateDashboardStats(data) {
+        document.getElementById("stat-total").innerText = data.length;
+        let today = new Date();
+        let dd = String(today.getDate()).padStart(2, "0");
+        let mm = String(today.getMonth() + 1).padStart(2, "0");
+        let ultahToday = data.filter((row) => {
+          let tgl = row["Tanggal Lahir"];
+          if (typeof tgl === "number") tgl = excelDateToJSDate(tgl);
+          if (!tgl) return false;
+          let [d, m] = tgl.split("-");
+          return d === dd && m === mm;
+        });
+        document.getElementById("stat-ultah").innerText = ultahToday.length;
+        document.getElementById("stat-email").innerText = emailSentCount;
+      }
+      function showBirthdayNotification(listUltah) {
+        if (listUltah.length === 0) return;
+        let namaList = listUltah.map((row) => row.Nama).join(", ");
+        let notifTitle =
+          listUltah.length === 1
+            ? `🎉 ${namaList} Ulang Tahun Hari Ini!`
+            : `🎉 Ada ${listUltah.length} Karyawan Ulang Tahun!`;
+        let notifBody =
+          listUltah.length === 1
+            ? `Jangan lupa ucapkan selamat ke ${namaList}.`
+            : `Jangan lupa ucapkan selamat ke: ${namaList}.`;
+        new window.Notification(notifTitle, {
+          body: notifBody,
+          icon: "logo.png",
+        });
+      }
+      function afterDataLoad() {
+        renderTable(
+          importedData,
+          document.getElementById("filterToday").checked
+        );
+        updateDashboardStats(importedData);
+        // Notifikasi ultah
+        let today = new Date();
+        let dd = String(today.getDate()).padStart(2, "0");
+        let mm = String(today.getMonth() + 1).padStart(2, "0");
+        const todayList = importedData.filter((row) => {
+          let tgl = row["Tanggal Lahir"];
+          if (typeof tgl === "number") tgl = excelDateToJSDate(tgl);
+          if (!tgl) return false;
+          let [d, m] = tgl.split("-");
+          return d === dd && m === mm;
+        });
+        showBirthdayNotification(todayList);
+      }
+
+      window.onload = async function () {
+        await loadEmailTemplate();
+        ipcRenderer.invoke("load-excel-db").then((data) => {
+          importedData = data;
+          afterDataLoad();
+        });
+      };
+
+      document.getElementById("refreshBtn").onclick = function () {
+        ipcRenderer.invoke("load-excel-db").then((data) => {
+          importedData = data;
+          afterDataLoad();
+        });
+      };
+
+      document.getElementById("saveTemplateBtn").onclick = async function () {
+        let plain = document.getElementById("templateEditor").value.trim();
+        let htmlMsg = plain.replace(/\n/g, "<br>");
+        htmlMsg =
+          `<div style="font-size:1.1rem; line-height:1.7; font-family:inherit;">` +
+          htmlMsg +
+          `</div>`;
+        await saveEmailTemplate(htmlMsg);
+        currentTemplate = htmlMsg;
+        document.getElementById("templateModal").style.display = "none";
+      };
+
+      document.getElementById("searchBox").oninput = function () {
+        let val = this.value.trim().toLowerCase();
+        let filterToday = document.getElementById("filterToday").checked;
+        let filtered = importedData.filter((row) => {
+          let tgl = row["Tanggal Lahir"];
+          if (typeof tgl === "number") tgl = excelDateToJSDate(tgl);
+          let match = true;
+          if (filterToday && tgl) {
+            let [d, m] = tgl.split("-");
+            let today = new Date();
+            match =
+              d === String(today.getDate()).padStart(2, "0") &&
+              m === String(today.getMonth() + 1).padStart(2, "0");
+          }
+          let nama = (row.Nama || "").toLowerCase();
+          let email = (row.Email || "").toLowerCase();
+          return match && (nama.includes(val) || email.includes(val));
+        });
+        renderTable(filtered, false);
+        updateDashboardStats(filtered);
+      };
+      document.getElementById("filterToday").onchange = function () {
+        renderTable(importedData, this.checked);
+      };
+
+      // KONFIGURASI EMAIL
+      const emailConfig = {
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        user: "jimsfavurboy@gmail.com",
+        pass: "yosfoohlhxqqwtyk",
+        subject: "Selamat Ulang Tahun 🎉 dari HRD",
+      };
+
+      document.getElementById("broadcastBtn").onclick = async function () {
+        function getAgeFromTanggalLahir(tglLahir) {
+          if (!tglLahir) return "";
+          const [d, m, y] = tglLahir.split("-");
+          const birthDate = new Date(`${y}-${m}-${d}`);
+          const today = new Date();
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const mDiff = today.getMonth() - birthDate.getMonth();
+          if (
+            mDiff < 0 ||
+            (mDiff === 0 && today.getDate() < birthDate.getDate())
+          ) {
+            age--;
+          }
+          return age;
+        }
+        const ultahToday = importedData
+          .map((row) => {
+            let tgl = row["Tanggal Lahir"];
+            if (typeof tgl === "number") tgl = excelDateToJSDate(tgl);
+            let today = new Date();
+            let [d, m] = tgl.split("-");
+            const isUltah =
+              d === String(today.getDate()).padStart(2, "0") &&
+              m === String(today.getMonth() + 1).padStart(2, "0");
+            const umur = getAgeFromTanggalLahir(tgl);
+            return { ...row, "Tanggal Lahir": tgl, umur, isUltah };
+          })
+          .filter((row) => row.isUltah);
+
+        if (ultahToday.length === 0) {
+          alert("Tidak ada karyawan yang ulang tahun hari ini.");
+          return;
+        }
+        if (!confirm(`Broadcast email ke ${ultahToday.length} orang?`)) return;
+        const btn = document.getElementById("broadcastBtn");
+        btn.innerText = "Mengirim...";
+        btn.disabled = true;
+        const result = await ipcRenderer.invoke(
+          "broadcast-birthday",
+          ultahToday,
+          emailConfig,
+          currentTemplate
+        );
+        btn.innerText = "Broadcast Email Ulang Tahun";
+        btn.disabled = false;
+        if (result.success) {
+          emailSentCount += ultahToday.length;
+          updateDashboardStats(importedData);
+          alert("Broadcast email ulang tahun berhasil dikirim!");
+        } else {
+          alert("Gagal kirim email:\n" + (result.error || "Unknown error"));
+        }
+      };
+
+      // MODAL EMAIL TEMPLATE
+      document.getElementById("editTemplateBtn").onclick = async function () {
+        let plain = currentTemplate;
+        if (plain.includes("<br") || plain.includes("<div")) {
+          plain = plain
+            .replace(/<div[^>]*>/gi, "")
+            .replace(/<\/div>/gi, "")
+            .replace(/<br\s*\/?>/gi, "\n")
+            .replace(/<\/?b>/gi, "")
+            .replace(/&nbsp;/gi, " ")
+            .replace(/^\s+|\s+$/g, "");
+        }
+        document.getElementById("templateEditor").value = plain.trim();
+        document.getElementById("templateModal").style.display = "flex";
+      };
+      document.getElementById("cancelTemplateBtn").onclick = function () {
+        document.getElementById("templateModal").style.display = "none";
+      };
+      document.getElementById("saveTemplateBtn").onclick = async function () {
+        let plain = document.getElementById("templateEditor").value.trim();
+        let htmlMsg = plain.replace(/\n/g, "<br>");
+        htmlMsg =
+          `<div style="font-size:1.1rem; line-height:1.7; font-family:inherit;">` +
+          htmlMsg +
+          `</div>`;
+        await saveEmailTemplate(htmlMsg);
+        currentTemplate = htmlMsg;
+        document.getElementById("templateModal").style.display = "none";
+      };
+    </script>
+  </body>
+</html>
